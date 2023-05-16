@@ -44,6 +44,6 @@ def call_weather_api(latitude, longitude, **kwargs):
     else:
         cache_api_response(response.json())
         # Pretty-print the forecast data
-        pretty_forecast = json_pretty_print(forecast)
-        print(pretty_forecast)
+        pretty_forecast = json_pretty_print(response.json())
+        # print(pretty_forecast)
         return response.json()

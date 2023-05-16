@@ -2,32 +2,26 @@ import json
 import os
 from datetime import datetime
 
-def cache_api_response(forecast):
+
+def cache_api_response(response):
     """
-    Cache the weather forecast data in a JSON file.
+    Caches the API response in a JSON file.
 
     Args:
-        forecast (dict): The weather forecast data to cache.
-
-    Returns:
-        None
+        response (dict): The API response data.
     """
-    # Get the current datetime
+    # Get the current date and time
     now = datetime.now()
 
-    # Format the datetime as a string to use in the filename
-    dt_string = now.strftime("%Y-%m-%dT%H:%M:%S")
+    # Format the date and time string to be used in the filename
+    dt_string = now.strftime("%Y-%m-%dT%H%M%S")  # Removes the colon characters
 
-    # Define the directory where we'll store the responses
-    directory = 'responses'
+    # Define the filename
+    filename = f"open-meteo-{dt_string}Z.json"
 
-    # Check if the directory exists and create it if it doesn't
-    if not os.path.exists(directory):
-        os.makedirs(directory)
+    # Define the file path
+    file_path = f"responses/{filename}"
 
-    # Create the filename
-    filename = f"{directory}/open-meteo-{dt_string}.json"
-
-    # Write the forecast data to the file
-    with open(filename, 'w') as f:
-        json.dump(forecast, f, indent=4)
+    # Write the API response data to the file
+    with open(file_path, "w") as file:
+        json.dump(response, file, indent=4)
