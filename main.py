@@ -25,13 +25,6 @@ def main():
         timezone=timezone,
     )
 
-    # Pretty-print the forecast data
-    pretty_forecast = json_pretty_print(forecast)
-    print(pretty_forecast)
-
-    # Cache the forecast data
-    cache_api_response(forecast)
-
 
 if __name__ == "__main__":
     main()
