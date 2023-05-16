@@ -1,0 +1,277 @@
+{
+    "latitude": 38.40001,
+    "longitude": -90.0,
+    "generationtime_ms": 64.18406963348389,
+    "utc_offset_seconds": -18000,
+    "timezone": "America/Chicago",
+    "timezone_abbreviation": "CDT",
+    "elevation": 169.0,
+    "hourly_units": {
+        "time": "iso8601",
+        "temperature_2m_ecmwf_ifs04": "\u00b0C",
+        "precipitation_ecmwf_ifs04": "mm",
+        "windspeed_10m_ecmwf_ifs04": "kn",
+        "winddirection_10m_ecmwf_ifs04": "\u00b0",
+        "is_day_ecmwf_ifs04": "",
+        "temperature_2m_gfs_seamless": "\u00b0C",
+        "precipitation_gfs_seamless": "mm",
+        "windspeed_10m_gfs_seamless": "kn",
+        "winddirection_10m_gfs_seamless": "\u00b0",
+        "windgusts_10m_gfs_seamless": "kn",
+        "is_day_gfs_seamless": "",
+        "temperature_2m_jma_seamless": "\u00b0C",
+        "precipitation_jma_seamless": "mm",
+        "windspeed_10m_jma_seamless": "kn",
+        "winddirection_10m_jma_seamless": "\u00b0",
+        "is_day_jma_seamless": "",
+        "temperature_2m_icon_seamless": "\u00b0C",
+        "precipitation_icon_seamless": "mm",
+        "windspeed_10m_icon_seamless": "kn",
+        "winddirection_10m_icon_seamless": "\u00b0",
+        "windgusts_10m_icon_seamless": "kn",
+        "is_day_icon_seamless": "",
+        "temperature_2m_gem_seamless": "\u00b0C",
+        "precipitation_gem_seamless": "mm",
+        "windspeed_10m_gem_seamless": "kn",
+        "winddirection_10m_gem_seamless": "\u00b0",
+        "windgusts_10m_gem_seamless": "kn",
+        "is_day_gem_seamless": "",
+        "temperature_2m_meteofrance_seamless": "\u00b0C",
+        "precipitation_meteofrance_seamless": "mm",
+        "windspeed_10m_meteofrance_seamless": "kn",
+        "winddirection_10m_meteofrance_seamless": "\u00b0",
+        "windgusts_10m_meteofrance_seamless": "kn",
+        "is_day_meteofrance_seamless": ""
+    },
+    "hourly": {
+        "time": [
+            "2023-05-16T00:00",
+            "2023-05-16T01:00"
+        ],
+        "temperature_2m_ecmwf_ifs04": [
+            18.8,
+            18.5
+        ],
+        "precipitation_ecmwf_ifs04": [
+            0.0,
+            0.0
+        ],
+        "windspeed_10m_ecmwf_ifs04": [
+            4.2,
+            4.1
+        ],
+        "winddirection_10m_ecmwf_ifs04": [
+            68,
+            71
+        ],
+        "is_day_ecmwf_ifs04": [
+            0,
+            0
+        ],
+        "temperature_2m_gfs_seamless": [
+            18.8,
+            18.5
+        ],
+        "precipitation_gfs_seamless": [
+            0.0,
+            0.0
+        ],
+        "windspeed_10m_gfs_seamless": [
+            4.3,
+            4.1
+        ],
+        "winddirection_10m_gfs_seamless": [
+            36,
+            45
+        ],
+        "windgusts_10m_gfs_seamless": [
+            10.3,
+            9.5
+        ],
+        "is_day_gfs_seamless": [
+            0,
+            0
+        ],
+        "temperature_2m_jma_seamless": [
+            21.5,
+            21.0
+        ],
+        "precipitation_jma_seamless": [
+            0.0,
+            0.0
+        ],
+        "windspeed_10m_jma_seamless": [
+            3.2,
+            3.2
+        ],
+        "winddirection_10m_jma_seamless": [
+            76,
+            76
+        ],
+        "is_day_jma_seamless": [
+            0,
+            0
+        ],
+        "temperature_2m_icon_seamless": [
+            19.6,
+            19.1
+        ],
+        "precipitation_icon_seamless": [
+            0.0,
+            0.1
+        ],
+        "windspeed_10m_icon_seamless": [
+            3.7,
+            3.4
+        ],
+        "winddirection_10m_icon_seamless": [
+            65,
+            66
+        ],
+        "windgusts_10m_icon_seamless": [
+            7.2,
+            7.4
+        ],
+        "is_day_icon_seamless": [
+            0,
+            0
+        ],
+        "temperature_2m_gem_seamless": [
+            18.5,
+            18.6
+        ],
+        "precipitation_gem_seamless": [
+            0.0,
+            0.0
+        ],
+        "windspeed_10m_gem_seamless": [
+            4.1,
+            4.1
+        ],
+        "winddirection_10m_gem_seamless": [
+            48,
+            65
+        ],
+        "windgusts_10m_gem_seamless": [
+            4.1,
+            4.1
+        ],
+        "is_day_gem_seamless": [
+            0,
+            0
+        ],
+        "temperature_2m_meteofrance_seamless": [
+            19.3,
+            19.0
+        ],
+        "precipitation_meteofrance_seamless": [
+            0.1,
+            0.1
+        ],
+        "windspeed_10m_meteofrance_seamless": [
+            3.6,
+            2.6
+        ],
+        "winddirection_10m_meteofrance_seamless": [
+            74,
+            73
+        ],
+        "windgusts_10m_meteofrance_seamless": [
+            8.6,
+            8.4
+        ],
+        "is_day_meteofrance_seamless": [
+            0,
+            0
+        ]
+    },
+    "daily_units": {
+        "time": "iso8601",
+        "windspeed_10m_max_ecmwf_ifs04": "kn",
+        "winddirection_10m_dominant_ecmwf_ifs04": "\u00b0",
+        "windspeed_10m_max_gfs_seamless": "kn",
+        "windgusts_10m_max_gfs_seamless": "kn",
+        "winddirection_10m_dominant_gfs_seamless": "\u00b0",
+        "windspeed_10m_max_jma_seamless": "kn",
+        "winddirection_10m_dominant_jma_seamless": "\u00b0",
+        "windspeed_10m_max_icon_seamless": "kn",
+        "windgusts_10m_max_icon_seamless": "kn",
+        "winddirection_10m_dominant_icon_seamless": "\u00b0",
+        "windspeed_10m_max_gem_seamless": "kn",
+        "windgusts_10m_max_gem_seamless": "kn",
+        "winddirection_10m_dominant_gem_seamless": "\u00b0",
+        "windspeed_10m_max_meteofrance_seamless": "kn",
+        "windgusts_10m_max_meteofrance_seamless": "kn",
+        "winddirection_10m_dominant_meteofrance_seamless": "\u00b0"
+    },
+    "daily": {
+        "time": [
+            "2023-05-16",
+            "2023-05-17"
+        ],
+        "windspeed_10m_max_ecmwf_ifs04": [
+            8.6,
+            5.7
+        ],
+        "winddirection_10m_dominant_ecmwf_ifs04": [
+            358,
+            0
+        ],
+        "windspeed_10m_max_gfs_seamless": [
+            8.7,
+            7.0
+        ],
+        "windgusts_10m_max_gfs_seamless": [
+            14.0,
+            12.1
+        ],
+        "winddirection_10m_dominant_gfs_seamless": [
+            334,
+            327
+        ],
+        "windspeed_10m_max_jma_seamless": [
+            5.7,
+            4.3
+        ],
+        "winddirection_10m_dominant_jma_seamless": [
+            349,
+            33
+        ],
+        "windspeed_10m_max_icon_seamless": [
+            7.4,
+            7.1
+        ],
+        "windgusts_10m_max_icon_seamless": [
+            16.1,
+            15.2
+        ],
+        "winddirection_10m_dominant_icon_seamless": [
+            360,
+            28
+        ],
+        "windspeed_10m_max_gem_seamless": [
+            5.8,
+            4.7
+        ],
+        "windgusts_10m_max_gem_seamless": [
+            11.1,
+            8.4
+        ],
+        "winddirection_10m_dominant_gem_seamless": [
+            354,
+            348
+        ],
+        "windspeed_10m_max_meteofrance_seamless": [
+            7.5,
+            5.6
+        ],
+        "windgusts_10m_max_meteofrance_seamless": [
+            14.4,
+            11.9
+        ],
+        "winddirection_10m_dominant_meteofrance_seamless": [
+            352,
+            42
+        ]
+    }
+}

@@ -1,6 +1,6 @@
 import requests
 
-def get_weather_forecast(latitude, longitude, **kwargs):
+def call_weather_api(latitude, longitude, **kwargs):
     """
     Retrieve weather forecast from the Open-Meteo API.
 
