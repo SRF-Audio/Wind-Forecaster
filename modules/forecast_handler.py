@@ -1,6 +1,5 @@
 import os
 import re
-import glob
 import json
 import time
 from datetime import datetime
@@ -96,3 +95,52 @@ def get_forecast(is_present):
         )
 
     return forecast
+
+
+def process_forecast(forecast):
+    """
+    Processes the forecast data and sorts it by each model type and then by hourly and daily forecasts.
+
+    Args:
+        forecast (dict): The forecast data.
+
+    Returns:
+        dict: The processed forecast data.
+    """
+    # Create a dictionary to hold the sorted data
+    sorted_forecast = {}
+
+    # Loop through the forecast data
+    for model_name, model_data in forecast.items():
+        # Initialize the model in the dictionary if it doesn't exist
+        if model_name not in sorted_forecast:
+            sorted_forecast[model_name] = {"hourly": [], "daily": []}
+
+        # Loop through the forecast times for this model
+        for forecast_time, forecast_data in model_data.items():
+            # Check if this is an hourly or daily forecast and add it to the appropriate list
+            if forecast_time == "hourly":
+                for hourly_data in forecast_data:
+                    sorted_forecast[model_name]["hourly"].append(
+                        {
+                            "Time": hourly_data["time"],
+                            "Wind Speed": hourly_data["windspeed_10m"],
+                            "Wind Gusts": hourly_data["windgusts_10m"],
+                            "Wind Direction": hourly_data["winddirection_10m"],
+                            "Day/Night": "Day"
+                            if hourly_data["is_day"] == 1
+                            else "Night",
+                        }
+                    )
+            elif forecast_time == "daily":
+                for daily_data in forecast_data:
+                    sorted_forecast[model_name]["daily"].append(
+                        {
+                            "Day": daily_data["time"],
+                            "Wind Speed": daily_data["windspeed_10m_max"],
+                            "Wind Gusts": daily_data["windgusts_10m_max"],
+                            "Wind Direction": daily_data["winddirection_10m_dominant"],
+                        }
+                    )
+
+    return sorted_forecast
