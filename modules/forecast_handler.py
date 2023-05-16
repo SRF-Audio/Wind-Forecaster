@@ -2,8 +2,8 @@ import os
 import re
 import json
 import time
-from datetime import datetime
 from modules.call_weather_api import call_weather_api
+from modules.json_pretty_print import json_pretty_print
 
 
 def is_cached_forecast_present() -> bool:
@@ -142,5 +142,32 @@ def process_forecast(forecast):
                             "Wind Direction": daily_data["winddirection_10m_dominant"],
                         }
                     )
+    print(sorted_forecast)
 
     return sorted_forecast
+
+
+from modules.json_pretty_print import json_pretty_print
+
+
+def display_forecast():
+    """
+    Handles the entire process of fetching, processing, and displaying the forecast data.
+    """
+    # Check if a cached forecast is present
+    is_present = is_cached_forecast_present()
+
+    # Fetch the forecast data
+    forecast = get_forecast(is_present)
+
+    # Process the forecast data
+    sorted_forecast = process_forecast(forecast)
+
+    # Display the sorted forecasts
+    for model, data in sorted_forecast.items():
+        print(f"{model} forecasts:")
+        for time_frame, forecasts in data.items():
+            print(f"\n{time_frame.capitalize()} forecasts:")
+            for forecast in forecasts:
+                print(json_pretty_print(forecast))
+                print("---")
