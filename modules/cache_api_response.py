@@ -30,4 +30,4 @@ def cache_api_response(forecast):
 
     # Write the forecast data to the file
     with open(filename, 'w') as f:
-        json.dump(forecast, f)
+        json.dump(forecast, f, indent=4)
