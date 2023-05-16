@@ -2,6 +2,7 @@ import os
 import re
 import json
 import time
+import pandas as pd
 from modules.call_weather_api import call_weather_api
 from modules.json_pretty_print import json_pretty_print
 
@@ -46,7 +47,7 @@ def get_forecast(is_present):
         is_present (bool): A boolean indicating whether a recent forecast file exists in the 'responses' directory.
 
     Returns:
-        dict: The forecast data as a JSON object.
+        pd.DataFrame: The DataFrame containing forecast data, including both hourly and daily forecasts for each model.
     """
     print(is_present)
     if is_present:
@@ -104,12 +105,67 @@ def get_forecast(is_present):
             timezone=timezone,
         )
 
-    print("hourly forecast data:")
-    print(forecast["hourly"])
-    print("daily forecast data:")
-    print(forecast["daily"])
+    # Convert the forecast data into a DataFrame
+    forecast_df = convert_data_dict_to_dataframe(forecast)
 
-    return forecast
+    return forecast_df
+
+
+def convert_data_dict_to_dataframe(data_dict):
+    """
+    Converts the nested dictionary of weather data into a DataFrame with the following columns:
+    - 'Model': the model name
+    - 'Type': the type of the forecast (hourly or daily)
+    - 'Forecast Time': the time of the forecast
+    - 'Temperature': temperature at 2m (only for hourly data)
+    - 'Precipitation': precipitation (only for hourly data)
+    - 'Wind Speed': wind speed at 10m
+    - 'Wind Direction': wind direction at 10m
+    - 'Wind Gusts': wind gusts at 10m
+    - 'Day/Night': whether it's day (1) or night (0) (only for hourly data)
+
+    Args:
+        data_dict (dict): the nested dictionary of weather data.
+
+    Returns:
+        DataFrame: a DataFrame representation of the weather data.
+    """
+    df_list = []
+
+    for model, model_data in data_dict.items():
+        for forecast_type, forecast_data in model_data.items():
+            for forecast in forecast_data:
+                if forecast_type == "hourly":
+                    df_list.append(
+                        {
+                            "Model": model,
+                            "Type": "Hourly",
+                            "Forecast Time": forecast["time"],
+                            "Temperature": forecast["temperature_2m"],
+                            "Precipitation": forecast["precipitation"],
+                            "Wind Speed": forecast["windspeed_10m"],
+                            "Wind Direction": forecast["winddirection_10m"],
+                            "Wind Gusts": forecast["windgusts_10m"],
+                            "Day/Night": "Day" if forecast["is_day"] == 1 else "Night",
+                        }
+                    )
+                elif forecast_type == "daily":
+                    df_list.append(
+                        {
+                            "Model": model,
+                            "Type": "Daily",
+                            "Forecast Time": forecast["time"],
+                            "Temperature": None,
+                            "Precipitation": None,
+                            "Wind Speed": forecast["windspeed_10m_max"],
+                            "Wind Direction": forecast["winddirection_10m_dominant"],
+                            "Wind Gusts": forecast["windgusts_10m_max"],
+                            "Day/Night": None,
+                        }
+                    )
+
+    df = pd.DataFrame(df_list)
+    return df
 
 
 def process_forecast(forecast):
