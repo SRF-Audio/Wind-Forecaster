@@ -1,4 +1,6 @@
 from modules.get_weather_forecast import get_weather_forecast
+from modules.cache_api_response import cache_api_response
+
 
 def main():
     """
@@ -8,6 +10,9 @@ def main():
     longitude = -89.91 # O'Fallon, IL
     forecast = get_weather_forecast(latitude, longitude, hourly='temperature_2m', forecast_days=16)
     print(forecast)
+
+    # Cache the forecast data
+    cache_api_response(forecast)
 
 if __name__ == "__main__":
     main()
