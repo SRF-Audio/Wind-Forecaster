@@ -117,59 +117,6 @@ def get_forecast(is_present):
     return forecast
 
 
-def convert_data_dict_to_dataframe(forecast):
-    # Initialize an empty DataFrame
-    forecast_df = pd.DataFrame()
-
-    # The header section keys
-    header_keys = [
-        "latitude",
-        "longitude",
-        "generationtime_ms",
-        "utc_offset_seconds",
-        "timezone",
-        "timezone_abbreviation",
-        "elevation",
-        "hourly_units",
-        "daily_units",
-    ]
-
-    # Handle the header section
-    header_data = {key: forecast.get(key, None) for key in header_keys}
-
-    # Extract only the model data
-    model_data = {
-        key: value for key, value in forecast.items() if key not in header_keys
-    }
-
-    # Process each model's data
-    for model, model_data in model_data.items():
-        print(f"Processing model: {model}")
-        if not isinstance(model_data, dict):
-            print(
-                f"Warning: Unexpected data type in model data for {model}. Expected dict, got {type(model_data)}. Skipping this model."
-            )
-            continue
-
-        for forecast_type, forecast_data in model_data.items():
-            print(f"Processing forecast type: {forecast_type}")
-            # Convert the forecast data into a DataFrame
-            forecast_data_df = pd.DataFrame(forecast_data)
-
-            # Add columns for the model and forecast type
-            forecast_data_df["model"] = model
-            forecast_data_df["forecast_type"] = forecast_type
-
-            # Append the DataFrame to the main DataFrame
-            forecast_df = pd.concat([forecast_df, forecast_data_df], ignore_index=True)
-
-    # Add the header data as additional columns to the main DataFrame
-    for key, value in header_data.items():
-        forecast_df[key] = value
-
-    return forecast_df
-
-
 def convert_data_dict_to_nested(data):
     """
     This function converts the input data dictionary into a nested dictionary structure where each model has a dictionary with
@@ -207,28 +154,61 @@ def convert_data_dict_to_nested(data):
         ]
     }
 
+    print(f"Found {len(model_data.keys())} keys in model_data")
+
+    # Pattern for keys
+    pattern = re.compile(r"_(\w+)$")
+
+    # Get unique model names
+    model_names = set()
+    for forecast_type in ["hourly", "daily"]:
+        model_names.update(
+            match.group(1)
+            for key in model_data[forecast_type].keys()
+            if (match := pattern.search(key))
+        )
+
+    print(f"Found {len(model_names)} models: {model_names}")
+
     # Process each model's data
-    for model, model_data in model_data.items():
+    for model in model_names:
         print(f"Processing model: {model}")
-        if not isinstance(model_data, dict):
-            print(
-                f"Warning: Unexpected data type in model data for {model}. Expected dict, got {type(model_data)}. Skipping this model."
-            )
-            continue
+        model_dict = {
+            "hourly": {},
+            "daily": {},
+        }  # Initialize a dictionary for the model
 
-        model_dict = {}  # Initialize a dictionary for the model
+        for forecast_type in ["hourly", "daily"]:
+            for key, values in model_data[forecast_type].items():
+                # If this key corresponds to the current model
+                if f"_{model}" in key:
+                    # Get the metric name from the key
+                    metric_name = key.split(f"_{model}")[0]
 
-        for forecast_type, forecast_data in model_data.items():
-            print(f"Processing forecast type: {forecast_type}")
+                    print(
+                        f"Processing metric: {metric_name} for forecast type: {forecast_type}"
+                    )
 
-            # Convert the forecast data into a list of dictionaries
-            forecast_data_list = [dict(row) for row in forecast_data]
+                    # Add the metric data to the model dictionary
+                    for value in values:
+                        timestamp = value["timestamp"]
 
-            # Add the list to the model dictionary
-            model_dict[forecast_type] = forecast_data_list
+                        # If this is a new time slot, add a new dictionary
+                        if timestamp not in model_dict[forecast_type]:
+                            model_dict[forecast_type][timestamp] = {"time": timestamp}
+
+                        # Add the metric data
+                        model_dict[forecast_type][timestamp][metric_name] = value[
+                            metric_name
+                        ]
+
+            # Convert the dictionary of timestamps to a list of dictionaries
+            model_dict[forecast_type] = list(model_dict[forecast_type].values())
 
         # Add the model dictionary to the main dictionary
         forecast_dict[model] = model_dict
+
+    print(f"Final forecast data structure: {forecast_dict}")
 
     return forecast_dict
 
@@ -244,7 +224,7 @@ def display_forecast():
     forecast = get_forecast(is_present)
 
     # Process the forecast data
-    forecast_dict = convert_data_dict_to_dataframe(forecast)
+    forecast_dict = convert_data_dict_to_nested(forecast)
 
     # Open the output file in write mode ('w')
     with open("output.txt", "w") as f:
