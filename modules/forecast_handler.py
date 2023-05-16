@@ -2,7 +2,7 @@ import os
 import re
 import json
 import time
-import datetime
+from datetime import datetime, timedelta
 import pandas as pd
 from modules.call_weather_api import call_weather_api
 from modules.json_pretty_print import json_pretty_print
@@ -52,8 +52,8 @@ def get_forecast(is_present):
     """
     print(is_present)
     if is_present:
-        # Time one hour ago
-        one_hour_ago = time.time() - 60 * 60
+        # Time one hour ago in UTC
+        one_hour_ago = datetime.utcnow() - timedelta(hours=1)
         print(f"one_hour_ago: {one_hour_ago}")
 
         # Get a list of all files in the /responses directory
@@ -63,8 +63,7 @@ def get_forecast(is_present):
         recent_files = [
             file
             for file in files
-            if datetime.datetime.strptime(file[11:-5], "%Y-%m-%dT%H%M%SZ")
-            > datetime.datetime.now() - datetime.timedelta(hours=1)
+            if datetime.strptime(file[11:-5], "%Y-%m-%dT%H%M%SZ") > one_hour_ago
         ]
 
         print(f"Found {len(recent_files)} recent files")
@@ -75,7 +74,7 @@ def get_forecast(is_present):
             print("Checking if date of recent file is in the last hour...")
             latest_file = max(
                 recent_files,
-                key=lambda x: datetime.datetime.strptime(x[11:-5], "%Y-%m-%dT%H%M%SZ"),
+                key=lambda x: datetime.strptime(x[11:-5], "%Y-%m-%dT%H%M%SZ"),
             )
 
             print(f"Using cached forecast file: {latest_file}")
@@ -86,6 +85,9 @@ def get_forecast(is_present):
         else:
             forecast = {}
     else:
+        forecast = {}
+
+    if not forecast:  # No forecast data available, make API call
         # Default parameters for the API call
         latitude = 38.59
         longitude = -89.91  # O'Fallon, IL
@@ -108,14 +110,14 @@ def get_forecast(is_present):
             timezone=timezone,
         )
 
-    # Convert the forecast data into a DataFrame
-    forecast_df = convert_data_dict_to_dataframe(forecast)
-    print(f"Forecast data frame: {forecast_df}")
+    # Convert the forecast data into a nested Dictionary
+    forecast = convert_data_dict_to_nested(forecast)
+    print(f"Forecast data frame: {forecast}")
 
-    return forecast_df
+    return forecast
 
 
-def convert_data_dict_to_dataframe(data):
+def convert_data_dict_to_dataframe(forecast):
     # Initialize an empty DataFrame
     forecast_df = pd.DataFrame()
 
@@ -133,10 +135,12 @@ def convert_data_dict_to_dataframe(data):
     ]
 
     # Handle the header section
-    header_data = {key: data.get(key, None) for key in header_keys}
+    header_data = {key: forecast.get(key, None) for key in header_keys}
 
     # Extract only the model data
-    model_data = {key: value for key, value in data.items() if key not in header_keys}
+    model_data = {
+        key: value for key, value in forecast.items() if key not in header_keys
+    }
 
     # Process each model's data
     for model, model_data in model_data.items():
@@ -166,46 +170,67 @@ def convert_data_dict_to_dataframe(data):
     return forecast_df
 
 
-def process_forecast(forecast: pd.DataFrame) -> dict:
+def convert_data_dict_to_nested(data):
     """
-    Processes the forecast DataFrame and sorts it by each model type and then by hourly and daily forecasts.
+    This function converts the input data dictionary into a nested dictionary structure where each model has a dictionary with
+    two keys: 'hourly' and 'daily'. Each of these keys corresponds to a list of dictionaries where each dictionary
+    represents the weather data for a specific time.
 
     Args:
-        forecast (pd.DataFrame): The forecast data.
+    data (dict): The input data dictionary containing the weather forecast data.
 
     Returns:
-        dict: The processed forecast data.
+    dict: A nested dictionary with the processed weather forecast data.
+
+    Example usage:
+    forecast_dict = convert_data_dict_to_dataframe(input_data)
     """
-    # Create a dictionary to hold the sorted data
-    sorted_forecast = {}
 
-    # Extract model names from forecast_type column and create a new column
-    forecast["model_name"] = forecast["forecast_type"].str.extract(
-        "_(\w+_\w+)", expand=False
-    )
+    # Initialize an empty dictionary
+    forecast_dict = {}
 
-    # Unique model names
-    models = forecast["model_name"].unique()
+    # Extract only the model data
+    model_data = {
+        key: value
+        for key, value in data.items()
+        if key
+        not in [
+            "latitude",
+            "longitude",
+            "generationtime_ms",
+            "utc_offset_seconds",
+            "timezone",
+            "timezone_abbreviation",
+            "elevation",
+            "hourly_units",
+            "daily_units",
+        ]
+    }
 
-    # Variable to control the printing
-    first_loop = True
+    # Process each model's data
+    for model, model_data in model_data.items():
+        print(f"Processing model: {model}")
+        if not isinstance(model_data, dict):
+            print(
+                f"Warning: Unexpected data type in model data for {model}. Expected dict, got {type(model_data)}. Skipping this model."
+            )
+            continue
 
-    for model in models:
-        model_data = forecast[forecast["model_name"] == model]
-        sorted_forecast[model] = {
-            "hourly": model_data[model_data["model"] == "hourly"],
-            "daily": model_data[model_data["model"] == "daily"],
-        }
+        model_dict = {}  # Initialize a dictionary for the model
 
-        if first_loop:
-            print(f"Model: {model}")
-            print(f"Hourly data for {model}:")
-            print(sorted_forecast[model]["hourly"])
-            print(f"Daily data for {model}:")
-            print(sorted_forecast[model]["daily"])
-            first_loop = False
+        for forecast_type, forecast_data in model_data.items():
+            print(f"Processing forecast type: {forecast_type}")
 
-    return sorted_forecast
+            # Convert the forecast data into a list of dictionaries
+            forecast_data_list = [dict(row) for row in forecast_data]
+
+            # Add the list to the model dictionary
+            model_dict[forecast_type] = forecast_data_list
+
+        # Add the model dictionary to the main dictionary
+        forecast_dict[model] = model_dict
+
+    return forecast_dict
 
 
 def display_forecast():
@@ -219,16 +244,17 @@ def display_forecast():
     forecast = get_forecast(is_present)
 
     # Process the forecast data
-    sorted_forecast = process_forecast(forecast)
+    forecast_dict = convert_data_dict_to_dataframe(forecast)
 
     # Open the output file in write mode ('w')
     with open("output.txt", "w") as f:
         # Display the sorted forecasts
-        for model, data in sorted_forecast.items():
+        for model, data in forecast_dict.items():
             # Write the model name to the file
             f.write(f"{model} forecasts:\n")
             for time_frame, forecasts in data.items():
                 # Write the time frame and forecasts to the file
                 f.write(f"\n{time_frame.capitalize()} forecasts:\n")
-                f.write(forecasts.to_string(index=False))
-                f.write("\n---\n")
+                for forecast in forecasts:
+                    f.write(json.dumps(forecast, indent=4))
+                    f.write("\n---\n")

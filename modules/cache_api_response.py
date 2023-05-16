@@ -11,7 +11,7 @@ def cache_api_response(response):
         response (dict): The API response data.
     """
     # Get the current date and time
-    now = datetime.now()
+    now = datetime.utcnow()
 
     # Format the date and time string to be used in the filename
     dt_string = now.strftime("%Y-%m-%dT%H%M%S")  # Removes the colon characters
