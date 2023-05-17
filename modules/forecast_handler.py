@@ -119,100 +119,69 @@ def get_forecast(is_present):
 
 def convert_data_dict_to_nested(data):
     """
-    This function converts the input data dictionary into a nested dictionary structure where each model has a dictionary with
-    two keys: 'hourly' and 'daily'. Each of these keys corresponds to a list of dictionaries where each dictionary
-    represents the weather data for a specific time.
-
+    Convert a dictionary of weather data into a nested dictionary structure.
+    
     Args:
-    data (dict): The input data dictionary containing the weather forecast data.
-
+        data (dict): The original weather data dictionary. This should have the structure:
+            {
+                "hourly": {
+                    "time": [...],
+                    "temperature_model": [...],
+                    ...
+                },
+                "daily": {
+                    "time": [...],
+                    "temperature_model": [...],
+                    ...
+                }
+            }
+            
     Returns:
-    dict: A nested dictionary with the processed weather forecast data.
-
-    Example usage:
-    forecast_dict = convert_data_dict_to_dataframe(input_data)
+        dict: The nested dictionary, structured as:
+            {
+                "model": {
+                    "hourly": [{"time": ..., "temperature": ..., ...}],
+                    "daily": [{"time": ..., "temperature": ..., ...}]
+                },
+                ...
+            }
     """
+    # List of models
+    models = ['ecmwf_ifs04', 'gfs_seamless', 'jma_seamless', 'icon_seamless', 'gem_seamless', 'meteofrance_seamless']
+    output = {}
 
-    # Initialize an empty dictionary
-    forecast_dict = {}
+    print("Converting data dictionary to nested structure...")
 
-    # Extract only the model data
-    model_data = {
-        key: value
-        for key, value in data.items()
-        if key
-        not in [
-            "latitude",
-            "longitude",
-            "generationtime_ms",
-            "utc_offset_seconds",
-            "timezone",
-            "timezone_abbreviation",
-            "elevation",
-            "hourly_units",
-            "daily_units",
-        ]
-    }
-
-    print(f"Found {len(model_data.keys())} keys in model_data")
-
-    # Pattern for keys
-    pattern = re.compile(r"_(\w+)$")
-
-    # Get unique model names
-    model_names = set()
-    for forecast_type in ["hourly", "daily"]:
-        model_names.update(
-            match.group(1)
-            for key in model_data[forecast_type].keys()
-            if (match := pattern.search(key))
-        )
-
-    print(f"Found {len(model_names)} models: {model_names}")
-
-    # Process each model's data
-    for model in model_names:
+    for model in models:
         print(f"Processing model: {model}")
-        model_dict = {
-            "hourly": {},
-            "daily": {},
-        }  # Initialize a dictionary for the model
+        output[model] = {
+            "hourly": [],
+            "daily": []
+        }
+        for i, time in enumerate(data["hourly"]["time"]):
+            hourly_data = {
+                "time": time
+            }
+            for key in data["hourly"]:
+                if model in key:
+                    new_key = key.replace(f"_{model}", "")
+                    hourly_data[new_key] = data["hourly"][key][i]
+            output[model]["hourly"].append(hourly_data)
 
-        for forecast_type in ["hourly", "daily"]:
-            for key, values in model_data[forecast_type].items():
-                # If this key corresponds to the current model
-                if f"_{model}" in key:
-                    # Get the metric name from the key
-                    metric_name = key.split(f"_{model}")[0]
+        for i, time in enumerate(data["daily"]["time"]):
+            daily_data = {
+                "time": time
+            }
+            for key in data["daily"]:
+                if model in key:
+                    new_key = key.replace(f"_{model}", "")
+                    daily_data[new_key] = data["daily"][key][i]
+            output[model]["daily"].append(daily_data)
 
-                    print(
-                        f"Processing metric: {metric_name} for forecast type: {forecast_type}"
-                    )
-
-                    # Add the metric data to the model dictionary
-                    for value in values:
-                        print(f"Debug: Value = {value}")  # Debug print statement
-                        timestamp = value["timestamp"]
-
-                        # If this is a new time slot, add a new dictionary
-                        if timestamp not in model_dict[forecast_type]:
-                            model_dict[forecast_type][timestamp] = {"time": timestamp}
-
-                        # Add the metric data
-                        model_dict[forecast_type][timestamp][metric_name] = value[
-                            metric_name
-                        ]
-
-            # Convert the dictionary of timestamps to a list of dictionaries
-            model_dict[forecast_type] = list(model_dict[forecast_type].values())
-
-        # Add the model dictionary to the main dictionary
-        forecast_dict[model] = model_dict
-
-    print(f"Final forecast data structure: {forecast_dict}")
-
-    return forecast_dict
-
+        print(f"Completed processing for model: {model}")
+    
+    print("Conversion complete!")
+    return output
 
 def display_forecast():
     """
