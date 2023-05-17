@@ -1,3 +1,8 @@
+import json
+import os
+from datetime import datetime
+ 
+
 def cache_api_response(response):
     """
     Caches the API response in a JSON file.
