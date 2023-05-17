@@ -191,6 +191,7 @@ def convert_data_dict_to_nested(data):
 
                     # Add the metric data to the model dictionary
                     for value in values:
+                        print(f"Debug: Value = {value}")  # Debug print statement
                         timestamp = value["timestamp"]
 
                         # If this is a new time slot, add a new dictionary
