@@ -1,8 +1,3 @@
-import json
-import os
-from datetime import datetime
-
-
 def cache_api_response(response):
     """
     Caches the API response in a JSON file.
@@ -10,6 +5,10 @@ def cache_api_response(response):
     Args:
         response (dict): The API response data.
     """
+    # Check if the 'responses' directory exists, if not, create it
+    if not os.path.exists("responses"):
+        os.makedirs("responses")
+
     # Get the current date and time
     now = datetime.utcnow()
 

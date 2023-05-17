@@ -193,7 +193,19 @@ def display_forecast():
     # Fetch the forecast data
     forecast_dict = get_forecast(is_present)
 
-    # Open the output file in write mode ('w')
-    with open("output.json", "w") as f:
-        # Write the forecast_dict as JSON to the file
-        json.dump(forecast_dict, f, indent=4)
+    # If the forecast data did not come from a cached file, write a new output file
+    if not is_present:
+        # Check if the /outputs directory exists, if not, create it
+        if not os.path.exists("outputs"):
+            os.makedirs("outputs")
+
+        # Get the current timestamp
+        timestamp = datetime.utcnow().strftime("%Y-%m-%dT%H%M%SZ")
+
+        # Create the file name
+        file_name = f"model_sorted_output_{timestamp}.json"
+
+        # Open the output file in write mode ('w')
+        with open(os.path.join("outputs", file_name), "w") as f:
+            # Write the forecast_dict as JSON to the file
+            json.dump(forecast_dict, f, indent=4)
