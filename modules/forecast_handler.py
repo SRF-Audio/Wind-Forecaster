@@ -112,7 +112,7 @@ def get_forecast(is_present):
 
     # Convert the forecast data into a nested Dictionary
     forecast = convert_data_dict_to_nested(forecast)
-    print(f"Forecast data frame: {forecast}")
+    print(f"Forecast converted successfully!")
 
     return forecast
 
@@ -191,20 +191,9 @@ def display_forecast():
     is_present = is_cached_forecast_present()
 
     # Fetch the forecast data
-    forecast = get_forecast(is_present)
-
-    # Process the forecast data
-    forecast_dict = convert_data_dict_to_nested(forecast)
+    forecast_dict = get_forecast(is_present)
 
     # Open the output file in write mode ('w')
-    with open("output.txt", "w") as f:
-        # Display the sorted forecasts
-        for model, data in forecast_dict.items():
-            # Write the model name to the file
-            f.write(f"{model} forecasts:\n")
-            for time_frame, forecasts in data.items():
-                # Write the time frame and forecasts to the file
-                f.write(f"\n{time_frame.capitalize()} forecasts:\n")
-                for forecast in forecasts:
-                    f.write(json.dumps(forecast, indent=4))
-                    f.write("\n---\n")
+    with open("output.json", "w") as f:
+        # Write the forecast_dict as JSON to the file
+        json.dump(forecast_dict, f, indent=4)
