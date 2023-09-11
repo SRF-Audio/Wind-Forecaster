@@ -1,6 +1,10 @@
 # Use an official Python runtime as the parent image
 FROM python:3.9-slim
 
+# Set environment variables for Flask
+ENV FLASK_APP=main.py
+ENV FLASK_RUN_HOST=0.0.0.0
+
 # Set an environment variable to ensure that Python doesn't try to write .pyc files
 ENV PYTHONDONTWRITEBYTECODE 1
 
@@ -28,5 +32,6 @@ RUN pip install --upgrade pip && \
 # Copy the content of the local src directory to the working directory
 COPY . /app/
 
-# Specify the command to run on container start
-CMD ["python", "./main.py"]
+# Command to run on container start
+CMD ["python", "-m", "flask", "run", "--host=0.0.0.0"]
+

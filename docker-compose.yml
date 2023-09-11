@@ -2,7 +2,9 @@ version: '3'
 
 services:
   flask-backend:
-    image: python:3.8-slim
+    build:
+      context: ./python-backend
+      dockerfile: Dockerfile
     volumes:
       - ./python-backend:/app
     working_dir: /app
@@ -17,32 +19,28 @@ services:
       - mongo
 
   react-frontend:
-    image: node:14
-    volumes:
-      - ./react-frontend:/app
-    working_dir: /app/src
-    command: ["npm", "start"]
+    build:
+      context: ./react-frontend
+      dockerfile: Dockerfile
     environment:
       - REACT_APP_BACKEND_URL=http://flask-backend:5000
     ports:
-      - "3000:3000"
+      - "3000:80"
     depends_on:
       - flask-backend
 
   mongo:
-    image: mongo:latest
+    build:
+      context: ./mongo-init
+      dockerfile: Dockerfile
     environment:
       - MONGO_INITDB_ROOT_USERNAME=admin
       - MONGO_INITDB_ROOT_PASSWORD=pass
-      - MONGO_APP_USER=myUser
-      - MONGO_APP_PASSWORD=myPassword
     ports:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
       - ./mongo-init/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
-      - ./mongo-init/init-mongo.sh:/docker-entrypoint-initdb.d/init-mongo.sh
-    entrypoint: [ "/docker-entrypoint-initdb.d/init-mongo.sh" ]
 
 volumes:
   mongo-data:

@@ -1,12 +1,4 @@
-from modules.forecast_handler import WeatherForecast
-
-def main():
-    """
-    Main function that retrieves and prints the weather forecast data.
-    """
-    weather_forecast = WeatherForecast()
-    
-    weather_forecast.display_forecast()
+from app import app
 
 if __name__ == "__main__":
-    main()
+    app.run(debug=True, host='0.0.0.0')

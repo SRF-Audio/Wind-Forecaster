@@ -1,5 +1,5 @@
 import requests
-from mongo_handler import MongoHandler
+from modules.mongo_handler import MongoHandler
 
 class WeatherAPIException(Exception):
     """Custom exception for weather API related errors."""

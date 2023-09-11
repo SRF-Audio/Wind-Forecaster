@@ -1,8 +1,7 @@
 import os
 from datetime import datetime, timedelta
-import pandas as pd
 from modules.call_weather_api import call_weather_api
-from modules.mongo_handler import MongoHandler  # Import the Mongo handler
+from modules.mongo_handler import MongoHandler
 
 import os
 
@@ -110,12 +109,18 @@ class WeatherForecast:
         print("Conversion complete!")
         return output
 
-def display_forecast(self):
-        """
-        Handles the entire process of fetching, processing, and displaying the forecast data.
-        """
-        try:
-            is_present = self.is_cached_forecast_present()
-            forecast_dict = self.get_forecast(is_present)
-        except Exception as e:
-            print(f"An error occurred while displaying the forecast: {e}")
+def get_forecast_data(self):
+    """
+    Fetches and processes the forecast data.
+    Returns a dictionary containing the forecast data or error information.
+    """
+    try:
+        is_present = self.is_cached_forecast_present()
+        forecast_dict = self.get_forecast(is_present)
+        return {"success": True, "data": forecast_dict}
+    except Exception as e:
+        # Log the error for debugging purposes
+        print(f"An error occurred while fetching the forecast: {e}")
+        # Return an error message in a web-friendly format
+        return {"success": False, "error": str(e)}
+

@@ -1,8 +1,8 @@
 db = db.getSiblingDB('windForecaster');
 
 db.createUser({
-    user: "__MONGO_APP_USER__",
-    pwd: "__MONGO_APP_PASSWORD__",
+    user: "mongo_user",
+    pwd: "mongo_password",
     roles: [{
         role: "readWrite",
         db: "windForecaster"
