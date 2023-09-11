@@ -1,0 +1,48 @@
+version: '3'
+
+services:
+  flask-backend:
+    image: python:3.8-slim
+    volumes:
+      - ./python-backend:/app
+    working_dir: /app
+    command: ["flask", "run", "--host=0.0.0.0"]
+    environment:
+      - FLASK_APP=main.py
+      - FLASK_ENV=development
+      - MONGODB_URI=mongodb://mongo:27017/windForecaster
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongo
+
+  react-frontend:
+    image: node:14
+    volumes:
+      - ./react-frontend:/app
+    working_dir: /app/src
+    command: ["npm", "start"]
+    environment:
+      - REACT_APP_BACKEND_URL=http://flask-backend:5000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - flask-backend
+
+  mongo:
+    image: mongo:latest
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=pass
+      - MONGO_APP_USER=myUser
+      - MONGO_APP_PASSWORD=myPassword
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+      - ./mongo-init/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
+      - ./mongo-init/init-mongo.sh:/docker-entrypoint-initdb.d/init-mongo.sh
+    entrypoint: [ "/docker-entrypoint-initdb.d/init-mongo.sh" ]
+
+volumes:
+  mongo-data:
