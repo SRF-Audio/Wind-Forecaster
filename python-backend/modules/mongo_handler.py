@@ -1,8 +1,12 @@
 from pymongo import MongoClient
+import os
 
 class MongoHandler:
+    DEFAULT_URI = "mongodb://localhost:27017/"
 
-    def __init__(self, uri):
+    def __init__(self, uri=None):
+        if uri is None:
+            uri = os.environ.get("MONGODB_URI", self.DEFAULT_URI)
         self.client = MongoClient(uri)
         self.db = None
         self.collection = None
