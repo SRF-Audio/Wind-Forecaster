@@ -8,7 +8,7 @@ The project utilizes Docker Compose to orchestrate multiple containers within Do
 
 ### Prerequisites
 - [Install Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-- [Install Docker](https://docs.docker.com/desktop/install/mac-install/)
+- [Install Docker](https://docs.docker.com/desktop/install/mac-install/) and start it
 - run `git clone https://github.com/SRF-Audio/Wind-Forecaster.git` in the folder of your choosing
 - (Optional, but highly recommended) [Install Mongo Compass](https://www.mongodb.com/products/tools/compass)
 
@@ -17,7 +17,7 @@ The project utilizes Docker Compose to orchestrate multiple containers within Do
 Navigate to the project root and run:
 
 - `docker-compose up --build` 
-(**NOTE**: First time builds may take 2-3 minutes depending on your internet speed. Follow on builds will be faster)
+(**NOTE**: First time builds may take 2-3 minutes depending on your internet speed. Follow on builds will have cached layers, and should be faster)
 
 Once the build process finishes, the React frontend will be accessible at http://localhost:3000 and the Flask backend API can be hit at http://localhost:5000/weather.
 

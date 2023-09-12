@@ -2,67 +2,45 @@ import os
 from datetime import datetime, timedelta
 from modules.call_weather_api import call_weather_api
 from modules.mongo_handler import MongoHandler
-
-import os
+from pymongo import errors as pymongo_errors
 
 class WeatherForecast:
-    def __init__(self):
-        mongo_uri = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/')  # fetch from env or use default
-        self.mongo = MongoHandler(mongo_uri)
+    def __init__(self, mongo_handler: MongoHandler):
+        self.latitude = None
+        self.longitude = None
+        self.additional_params = {}
+        self.mongo = mongo_handler
+        self.mongo.connect("weather_database", ["Forecasts"])
+        
+        
+        # Temporary values for latitude and longitude
+        # TODO: Replace with function return data in the future
+        tempLat = 38.810608
+        tempLong = -90.699844
+        self.set_latitude(tempLat)
+        self.set_longitude(tempLong)
 
+    def set_latitude(self, latitude: float):
+        self.latitude = latitude
+
+    def set_longitude(self, longitude: float):
+        self.longitude = longitude
+
+    def set_additional_params(self, params: dict):
+        self.additional_params = params
 
     def is_cached_forecast_present(self) -> bool:
-        """
-        Check if there are any cached forecast files in the MongoDB.
-
-        Returns:
-            bool: True if one or more cached forecast files are present, False otherwise.
-        """
+        one_hour_ago = datetime.utcnow() - timedelta(hours=1)
         try:
-            return self.mongo.is_forecast_present()
-        except PyMongoError as e:
+            is_present = self.mongo.is_forecast_present(collection_name="Forecasts", query={"time": {"$gte": one_hour_ago}})
+            print(f"Is forecast present in cache? {is_present}")
+            return is_present
+        except pymongo_errors.PyMongoError as e:
             print(f"Error checking for cached forecast: {e}")
             return False
-
-    def get_forecast(self, is_present: bool) -> dict:
-        """
-        This function retrieves weather forecast data from MongoDB or makes a new API call.
-
-        Args:
-            is_present (bool): A boolean indicating whether a recent forecast exists in MongoDB.
-
-        Returns:
-            dict: The forecast data.
-        """
-        forecast = None
-        try:
-            if is_present:
-                one_hour_ago = datetime.utcnow() - timedelta(hours=1)
-                forecast = self.mongo.get_recent_forecast(one_hour_ago)
-
-            if not forecast:
-                # ... (rest of the API call setup)
-                forecast = call_weather_api(
-                    # ... (rest of the parameters)
-                )
-                self.mongo.save_forecast(forecast)
-        except PyMongoError as e:
-            print(f"Error fetching from or saving to MongoDB: {e}")
-        except Exception as e:  # Catching potential API errors or any other unexpected errors
-            print(f"Error getting forecast: {e}")
-
-        if forecast:
-            try:
-                forecast = self.convert_data_dict_to_nested(forecast)
-                print(f"Forecast converted successfully!")
-            except Exception as e:
-                print(f"Error processing forecast data: {e}")
-        else:
-            print("No forecast data available.")
-
-        return forecast
-
+        
     def convert_data_dict_to_nested(self, data: dict) -> dict:
+
         """
         Convert a dictionary of weather data into a nested dictionary structure.
 
@@ -109,18 +87,40 @@ class WeatherForecast:
         print("Conversion complete!")
         return output
 
-def get_forecast_data(self):
-    """
-    Fetches and processes the forecast data.
-    Returns a dictionary containing the forecast data or error information.
-    """
-    try:
+    def get_forecast(self) -> dict:
+        # Checking if a recent forecast exists
         is_present = self.is_cached_forecast_present()
-        forecast_dict = self.get_forecast(is_present)
-        return {"success": True, "data": forecast_dict}
-    except Exception as e:
-        # Log the error for debugging purposes
-        print(f"An error occurred while fetching the forecast: {e}")
-        # Return an error message in a web-friendly format
-        return {"success": False, "error": str(e)}
 
+        # If present, fetch it
+        forecast = None
+        if is_present:
+            one_hour_ago = datetime.utcnow() - timedelta(hours=1)
+            forecast = self.mongo.fetch_all(collection_name="Forecasts", query={"time": {"$gte": one_hour_ago}})
+            print(f"Forecast fetched from cache: {forecast}")
+
+        # If not present or if there was an error fetching from DB, make an API call
+        if not forecast:
+            if not self.latitude or not self.longitude:
+                return {"success": False, "error": "Latitude and Longitude not set!"}
+            try:
+                forecast = call_weather_api(latitude=self.latitude, longitude=self.longitude, mongo_handler=self.mongo, **self.additional_params)
+                print(f"Forecast fetched from API: {forecast}")
+                # Cache the forecast
+                print("Attempting to cache the forecast...")
+                forecast.pop('_id', None)
+                self.mongo.insert(data=forecast, collection_name="Forecasts")
+
+                print("Forecast cached successfully!")
+            except Exception as e:
+                print(f"Error during API call or caching: {e}")
+                return {"success": False, "error": str(e)}
+
+        # Convert the fetched forecast into the desired nested format
+        try:
+            print("Attempting to convert data dictionary to nested structure...")
+            forecast = self.convert_data_dict_to_nested(forecast)
+            print("Data conversion successful!")
+            return {"success": True, "data": forecast}
+        except Exception as e:
+            print(f"Error during data conversion: {e}")
+            return {"success": False, "error": str(e)}

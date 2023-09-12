@@ -1,5 +1,9 @@
 version: '3'
 
+networks:
+  wind-forecaster-network:
+    driver: bridge
+
 services:
   flask-backend:
     build:
@@ -10,11 +14,15 @@ services:
     working_dir: /app
     command: ["flask", "run", "--host=0.0.0.0"]
     environment:
-      - FLASK_APP=main.py
-      - FLASK_ENV=development
-      - MONGODB_URI=mongodb://mongo:27017/windForecaster
+          - FLASK_APP=main.py
+          - FLASK_ENV=development
+          - MONGO_INITDB_ROOT_USERNAME=admin
+          - MONGO_INITDB_ROOT_PASSWORD=pass
+          - MONGODB_URI=mongodb://wind-forecaster-mongo:27017/windForecaster
     ports:
       - "5000:5000"
+    networks:
+      - wind-forecaster-network
     depends_on:
       - mongo
 
@@ -26,10 +34,12 @@ services:
       - REACT_APP_BACKEND_URL=http://flask-backend:5000
     ports:
       - "3000:80"
+    networks:
+      - wind-forecaster-network
     depends_on:
       - flask-backend
 
-  mongo:
+  wind-forecaster-mongo:
     build:
       context: ./mongo-init
       dockerfile: Dockerfile
@@ -38,6 +48,8 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=pass
     ports:
       - "27017:27017"
+    networks:
+      - wind-forecaster-network
     volumes:
       - mongo-data:/data/db
       - ./mongo-init/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
