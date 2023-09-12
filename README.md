@@ -9,7 +9,7 @@ The project utilizes Docker Compose to orchestrate multiple containers within Do
 ### Prerequisites
 - [Install Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 - [Install Docker](https://docs.docker.com/desktop/install/mac-install/) and start it
-- run open a Terminal and run `git clone https://github.com/SRF-Audio/Wind-Forecaster.git` in the folder of your choosing
+- Open a Terminal and run `git clone https://github.com/SRF-Audio/Wind-Forecaster.git` in the folder of your choosing
 - (Optional, but highly recommended) [Install Mongo Compass](https://www.mongodb.com/products/tools/compass)
 
 ### Run with Docker Compose:
