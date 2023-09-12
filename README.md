@@ -42,7 +42,7 @@ This section will guide you on how to simulate a scenario where the backend serv
 
 This assumes that you have followed the steps in [Run with Docker Compose](#run-with-docker-compose) and are viewing the app at http://localhost:3000
 
-- Step 1: Simulating Backend Downtime
+### Step 1: Simulating Backend Downtime
 To simulate the backend service going down, you can stop the backend container using the following command in your terminal:
 
 `docker ps | grep 'backend' | awk '{print $1}' | xargs docker kill`
@@ -50,7 +50,7 @@ To simulate the backend service going down, you can stop the backend container u
 
 After executing this command, if you refresh the frontend, it should now display the message indicating that there's no backend connection.
 
-Step 2: Bringing the Backend Back Up
+### Step 2: Bringing the Backend Back Up
 To bring the backend service back up, start the container again using:
 
 `docker compose up`
