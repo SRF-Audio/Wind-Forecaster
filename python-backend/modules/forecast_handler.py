@@ -109,18 +109,19 @@ class WeatherForecast:
                 print("Attempting to cache the forecast...")
                 forecast.pop('_id', None)
                 self.mongo.insert(data=forecast, collection_name="Forecasts")
-
                 print("Forecast cached successfully!")
             except Exception as e:
                 print(f"Error during API call or caching: {e}")
                 return {"success": False, "error": str(e)}
 
-        # Convert the fetched forecast into the desired nested format
-        try:
-            print("Attempting to convert data dictionary to nested structure...")
-            forecast = self.convert_data_dict_to_nested(forecast)
-            print("Data conversion successful!")
-            return {"success": True, "data": forecast}
-        except Exception as e:
-            print(f"Error during data conversion: {e}")
-            return {"success": False, "error": str(e)}
+        # Commenting out the conversion and returning raw data
+        # try:
+        #     print("Attempting to convert data dictionary to nested structure...")
+        #     forecast = self.convert_data_dict_to_nested(forecast)
+        #     print("Data conversion successful!")
+        #     return {"success": True, "data": forecast}
+        # except Exception as e:
+        #     print(f"Error during data conversion: {e}")
+        #     return {"success": False, "error": str(e)}
+
+        return {"success": True, "data": forecast}

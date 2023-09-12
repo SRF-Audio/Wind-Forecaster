@@ -1,11 +1,15 @@
-from flask import jsonify
+from flask import Flask, json
+from flask_cors import CORS
 from . import app
 from modules.forecast_handler import WeatherForecast
 from modules.mongo_handler import MongoHandler
+from modules.json_encoder import JSONEncoder
 
 # Initialize the MongoHandler instance outside the route
 mongo_handler = MongoHandler()
 mongo_handler.test_connection()
+
+CORS(app)
 
 @app.route('/weather', methods=['GET'])
 def get_weather():
@@ -15,6 +19,12 @@ def get_weather():
     response_data = weather_forecast.get_forecast()
     
     if response_data["success"]:
-        return jsonify(response_data["data"]), 200
+        response = app.response_class(
+            response=json.dumps(response_data["data"], cls=JSONEncoder),
+            status=200,
+            mimetype='application/json'
+        )
     else:
-        return jsonify({"error": response_data["error"]}), 500
+        response = jsonify({"error": response_data["error"]}), 500
+
+    return response
