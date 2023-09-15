@@ -25,7 +25,8 @@ services:
     networks:
       - wind-forecaster-network
     depends_on:
-      - mongo
+      - wind-forecaster-mongo
+
 
   react-frontend:
     build:
@@ -35,7 +36,7 @@ services:
       - REACT_APP_BACKEND_URL=http://flask-backend:5000
       - HOST=0.0.0.0
     ports:
-      - "3000:3000"
+      - "3000:80"
       - "9229:9229" # for debugging
     networks:
       - wind-forecaster-network
