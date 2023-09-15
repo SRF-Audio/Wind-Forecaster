@@ -32,6 +32,8 @@ services:
     build:
       context: ./react-frontend
       dockerfile: Dockerfile
+    volumes:
+    - ./react-frontend:/app
     environment:
       - REACT_APP_BACKEND_URL=http://flask-backend:5000
       - HOST=0.0.0.0
