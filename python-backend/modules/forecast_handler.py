@@ -87,41 +87,38 @@ class WeatherForecast:
         print("Conversion complete!")
         return output
 
-    def get_forecast(self) -> dict:
-        # Checking if a recent forecast exists
-        is_present = self.is_cached_forecast_present()
+def get_forecast(self) -> bool:
+    # Checking if a recent forecast exists
+    is_present = self.is_cached_forecast_present()
 
-        # If present, fetch it
-        forecast = None
-        if is_present:
-            one_hour_ago = datetime.utcnow() - timedelta(hours=1)
-            forecast = self.mongo.fetch_all(collection_name="Forecasts", query={"time": {"$gte": one_hour_ago}})
-            print(f"Forecast fetched from cache: {forecast}")
+    # If present, fetch it
+    forecast = None
+    if is_present:
+        one_hour_ago = datetime.utcnow() - timedelta(hours=1)
+        forecast = self.mongo.fetch_all(collection_name="Forecasts", query={"time": {"$gte": one_hour_ago}})
+        print(f"Forecast fetched from cache: {forecast}")
 
-        # If not present or if there was an error fetching from DB, make an API call
-        if not forecast:
-            if not self.latitude or not self.longitude:
-                return {"success": False, "error": "Latitude and Longitude not set!"}
-            try:
-                forecast = call_weather_api(latitude=self.latitude, longitude=self.longitude, mongo_handler=self.mongo, **self.additional_params)
-                print(f"Forecast fetched from API: {forecast}")
-                # Cache the forecast
-                print("Attempting to cache the forecast...")
-                forecast.pop('_id', None)
-                self.mongo.insert(data=forecast, collection_name="Forecasts")
-                print("Forecast cached successfully!")
-            except Exception as e:
-                print(f"Error during API call or caching: {e}")
-                return {"success": False, "error": str(e)}
+    # If not present or if there was an error fetching from DB, make an API call
+    if not forecast:
+        if not self.latitude or not self.longitude:
+            print("Latitude and Longitude not set!")
+            return False
+        try:
+            forecast = call_weather_api(latitude=self.latitude, longitude=self.longitude, mongo_handler=self.mongo, **self.additional_params)
+            print(f"Forecast fetched from API: {forecast}")
+            # Cache the forecast
+            print("Attempting to cache the forecast...")
+            forecast.pop('_id', None)
+            self.mongo.insert(data=forecast, collection_name="Forecasts")
+            print("Forecast cached successfully!")
+        except Exception as e:
+            print(f"Error during API call or caching: {e}")
+            return False
 
-        # Commenting out the conversion and returning raw data
-        # try:
-        #     print("Attempting to convert data dictionary to nested structure...")
-        #     forecast = self.convert_data_dict_to_nested(forecast)
-        #     print("Data conversion successful!")
-        #     return {"success": True, "data": forecast}
-        # except Exception as e:
-        #     print(f"Error during data conversion: {e}")
-        #     return {"success": False, "error": str(e)}
+    return True
 
-        return {"success": True, "data": forecast}
+
+def fetch_and_cache_forecast():
+    mongo_handler = MongoHandler()  # Assuming MongoHandler is appropriately initialized
+    weather_forecast = WeatherForecast(mongo_handler)
+    weather_forecast.get_forecast()

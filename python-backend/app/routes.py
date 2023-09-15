@@ -1,9 +1,10 @@
-from flask import Flask, json
+from flask import Flask, json, jsonify
 from flask_cors import CORS
 from . import app
 from modules.forecast_handler import WeatherForecast
 from modules.mongo_handler import MongoHandler
 from modules.json_encoder import JSONEncoder
+from modules.hourly_retriever import HourlyRetriever
 
 # Initialize the MongoHandler instance outside the route
 mongo_handler = MongoHandler()
@@ -11,20 +12,35 @@ mongo_handler.test_connection()
 
 CORS(app)
 
-@app.route('/weather', methods=['GET'])
-def get_weather():
-    # Inject the mongo_handler instance when creating the WeatherForecast object
-    weather_forecast = WeatherForecast(mongo_handler)
+@app.route('/hourly', methods=['GET'])
+def get_hourly_forecast():
+    hourly_retriever = HourlyRetriever(mongo_handler)
+    hourly_forecast = hourly_retriever.get_hourly_forecast()
     
-    response_data = weather_forecast.get_forecast()
-    
-    if response_data["success"]:
+    if hourly_forecast["success"]:
         response = app.response_class(
-            response=json.dumps(response_data["data"], cls=JSONEncoder),
+            response=json.dumps(hourly_forecast["data"], cls=JSONEncoder),
             status=200,
             mimetype='application/json'
         )
     else:
-        response = jsonify({"error": response_data["error"]}), 500
+        response = jsonify({"error": hourly_forecast["error"]}), 500
+
+    return response
+
+@app.route('/daily', methods=['GET'])
+def get_daily_forecast():
+    # NOTE: You'll need to implement the functionality for this 
+    # in the WeatherForecast class (or another module).
+    daily_forecast = WeatherForecast(mongo_handler).get_daily_forecast()
+    
+    if daily_forecast["success"]:
+        response = app.response_class(
+            response=json.dumps(daily_forecast["data"], cls=JSONEncoder),
+            status=200,
+            mimetype='application/json'
+        )
+    else:
+        response = jsonify({"error": daily_forecast["error"]}), 500
 
     return response
