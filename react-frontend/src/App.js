@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import logo from './logo.svg';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
@@ -13,11 +12,11 @@ function App() {
 
     const fetchData = async () => {
       try {
-        const response = await fetch(`${BACKEND_URL}/weather`);
+        const response = await fetch(`${BACKEND_URL}/hourly`);
         const result = await response.json();
 
-        if (result.latitude && result.longitude) {
-          setData(result);
+        if (Array.isArray(result) && result.length) {
+          setData(result[0]);  // assuming you want the first object in the returned array
         } else {
           setData("error");
         }
@@ -40,9 +39,9 @@ function App() {
             minWidth: 275,
             mt: 3,
             background: 'linear-gradient(90deg, hsla(33, 100%, 53%, 1) 0%, hsla(58, 100%, 68%, 1) 100%)',
-            transition: 'transform 0.3s', // Transition effect for smooth scaling
+            transition: 'transform 0.3s',
             '&:hover': {
-              transform: 'scale(1.05)'  // On hover, scale the card to 105% its original size
+              transform: 'scale(1.05)'
             }
           }}>
             <CardContent>
@@ -50,10 +49,16 @@ function App() {
                 Weather Data
               </Typography>
               <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                Coordinates
+                Wind Information
               </Typography>
               <Typography variant="h5" component="div">
-                Lat {data.latitude} Long {data.longitude}
+                Wind Direction: {data.winddirection}°
+              </Typography>
+              <Typography variant="h5" component="div">
+                Wind Gusts: {data.windgusts} m/s
+              </Typography>
+              <Typography variant="h5" component="div">
+                Wind Speed: {data.windspeed} m/s
               </Typography>
             </CardContent>
           </Card>

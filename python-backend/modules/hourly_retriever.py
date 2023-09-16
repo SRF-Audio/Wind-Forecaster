@@ -49,6 +49,7 @@ class HourlyRetriever:
             # Fetch the aggregated results
             results = list(self.mongo.collections["Forecasts"].aggregate(pipeline))
 
+            print(results)
             return {"success": True, "data": results}
 
         except pymongo_errors.PyMongoError as e:

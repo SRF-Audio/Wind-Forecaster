@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from modules.call_weather_api import call_weather_api
 from modules.mongo_handler import MongoHandler
 from pymongo import errors as pymongo_errors
+from bson import ObjectId
 
 class WeatherForecast:
     def __init__(self, mongo_handler: MongoHandler):
@@ -31,14 +32,19 @@ class WeatherForecast:
 
     def is_cached_forecast_present(self) -> bool:
         one_hour_ago = datetime.utcnow() - timedelta(hours=1)
+        
+        # Create an ObjectId from a timestamp one hour ago
+        oid_one_hour_ago = ObjectId.from_datetime(one_hour_ago)
+        
         try:
-            is_present = self.mongo.is_forecast_present(collection_name="Forecasts", query={"time": {"$gte": one_hour_ago}})
+            # Check if any document's ObjectId is newer than the one created an hour ago
+            is_present = self.mongo.is_forecast_present(collection_name="Forecasts", query={"_id": {"$gt": oid_one_hour_ago}})
             print(f"Is forecast present in cache? {is_present}")
             return is_present
         except pymongo_errors.PyMongoError as e:
             print(f"Error checking for cached forecast: {e}")
             return False
-        
+            
     def convert_data_dict_to_nested(self, data: dict) -> dict:
 
         """
@@ -87,36 +93,35 @@ class WeatherForecast:
         print("Conversion complete!")
         return output
 
-def get_forecast(self) -> bool:
-    # Checking if a recent forecast exists
-    is_present = self.is_cached_forecast_present()
+    def get_forecast(self) -> bool:
+        # Checking if a recent forecast exists
+        is_present = self.is_cached_forecast_present()
 
-    # If present, fetch it
-    forecast = None
-    if is_present:
-        one_hour_ago = datetime.utcnow() - timedelta(hours=1)
-        forecast = self.mongo.fetch_all(collection_name="Forecasts", query={"time": {"$gte": one_hour_ago}})
-        print(f"Forecast fetched from cache: {forecast}")
+        # If present, fetch it
+        forecast = None
+        if is_present:
+            one_hour_ago = datetime.utcnow() - timedelta(hours=1)
+            forecast = self.mongo.fetch_all(collection_name="Forecasts", query={"time": {"$gte": one_hour_ago}})
+            print(f"Forecast fetched from cache: {forecast}")
 
-    # If not present or if there was an error fetching from DB, make an API call
-    if not forecast:
-        if not self.latitude or not self.longitude:
-            print("Latitude and Longitude not set!")
-            return False
-        try:
-            forecast = call_weather_api(latitude=self.latitude, longitude=self.longitude, mongo_handler=self.mongo, **self.additional_params)
-            print(f"Forecast fetched from API: {forecast}")
-            # Cache the forecast
-            print("Attempting to cache the forecast...")
-            forecast.pop('_id', None)
-            self.mongo.insert(data=forecast, collection_name="Forecasts")
-            print("Forecast cached successfully!")
-        except Exception as e:
-            print(f"Error during API call or caching: {e}")
-            return False
+        # If not present or if there was an error fetching from DB, make an API call
+        if not forecast:
+            if not self.latitude or not self.longitude:
+                print("Latitude and Longitude not set!")
+                return False
+            try:
+                forecast = call_weather_api(latitude=self.latitude, longitude=self.longitude, mongo_handler=self.mongo, **self.additional_params)
+                print(f"Forecast fetched from API: {forecast}")
+                # Cache the forecast
+                print("Attempting to cache the forecast...")
+                forecast.pop('_id', None)
+                self.mongo.insert(data=forecast, collection_name="Forecasts")
+                print("Forecast cached successfully!")
+            except Exception as e:
+                print(f"Error during API call or caching: {e}")
+                return False
 
-    return True
-
+        return True
 
 def fetch_and_cache_forecast():
     mongo_handler = MongoHandler()  # Assuming MongoHandler is appropriately initialized
