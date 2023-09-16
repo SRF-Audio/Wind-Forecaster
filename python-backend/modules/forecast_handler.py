@@ -14,8 +14,8 @@ class WeatherForecast:
         self.mongo.connect("weather_database", ["Forecasts"])
         
         
-        # Temporary values for latitude and longitude of O'Fallon, IL
-        # TODO: Replace with map coordinates once map is implemented
+        # TODO: Replace with dynamic map coordinates once map is implemented
+        # https://github.com/SRF-Audio/Wind-Forecaster/issues/2
         tempLat = 38.810608
         tempLong = -90.699844
         self.set_latitude(tempLat)
