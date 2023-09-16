@@ -14,8 +14,8 @@ class WeatherForecast:
         self.mongo.connect("weather_database", ["Forecasts"])
         
         
-        # Temporary values for latitude and longitude
-        # TODO: Replace with function return data in the future
+        # Temporary values for latitude and longitude of O'Fallon, IL
+        # TODO: Replace with map coordinates once map is implemented
         tempLat = 38.810608
         tempLong = -90.699844
         self.set_latitude(tempLat)
@@ -33,11 +33,9 @@ class WeatherForecast:
     def is_cached_forecast_present(self) -> bool:
         one_hour_ago = datetime.utcnow() - timedelta(hours=1)
         
-        # Create an ObjectId from a timestamp one hour ago
         oid_one_hour_ago = ObjectId.from_datetime(one_hour_ago)
         
         try:
-            # Check if any document's ObjectId is newer than the one created an hour ago
             is_present = self.mongo.is_forecast_present(collection_name="Forecasts", query={"_id": {"$gt": oid_one_hour_ago}})
             print(f"Is forecast present in cache? {is_present}")
             return is_present
@@ -45,66 +43,14 @@ class WeatherForecast:
             print(f"Error checking for cached forecast: {e}")
             return False
             
-    def convert_data_dict_to_nested(self, data: dict) -> dict:
-
-        """
-        Convert a dictionary of weather data into a nested dictionary structure.
-
-        Args:
-            data (dict): The original weather data dictionary.
-
-        Returns:
-            dict: The nested dictionary.
-        """
-        # List of models
-        models = ['ecmwf_ifs04', 'gfs_seamless', 'jma_seamless', 'icon_seamless', 'gem_seamless', 'meteofrance_seamless']
-        output = {}
-
-        print("Converting data dictionary to nested structure...")
-
-        for model in models:
-            print(f"Processing model: {model}")
-            output[model] = {
-                "hourly": [],
-                "daily": []
-            }
-            for i, time in enumerate(data["hourly"]["time"]):
-                hourly_data = {
-                    "time": time
-                }
-                for key in data["hourly"]:
-                    if model in key:
-                        new_key = key.replace(f"_{model}", "")
-                        hourly_data[new_key] = data["hourly"][key][i]
-                output[model]["hourly"].append(hourly_data)
-
-            for i, time in enumerate(data["daily"]["time"]):
-                daily_data = {
-                    "time": time
-                }
-                for key in data["daily"]:
-                    if model in key:
-                        new_key = key.replace(f"_{model}", "")
-                        daily_data[new_key] = data["daily"][key][i]
-                output[model]["daily"].append(daily_data)
-
-            print(f"Completed processing for model: {model}")
-
-        print("Conversion complete!")
-        return output
-
     def get_forecast(self) -> bool:
-        # Checking if a recent forecast exists
-        is_present = self.is_cached_forecast_present()
-
-        # If present, fetch it
         forecast = None
-        if is_present:
+        
+        if self.is_cached_forecast_present():
             one_hour_ago = datetime.utcnow() - timedelta(hours=1)
             forecast = self.mongo.fetch_all(collection_name="Forecasts", query={"time": {"$gte": one_hour_ago}})
-            print(f"Forecast fetched from cache: {forecast}")
+            print(f"Forecast fetched from mongo: {forecast}")
 
-        # If not present or if there was an error fetching from DB, make an API call
         if not forecast:
             if not self.latitude or not self.longitude:
                 print("Latitude and Longitude not set!")
@@ -112,18 +58,16 @@ class WeatherForecast:
             try:
                 forecast = call_weather_api(latitude=self.latitude, longitude=self.longitude, mongo_handler=self.mongo, **self.additional_params)
                 print(f"Forecast fetched from API: {forecast}")
-                # Cache the forecast
-                print("Attempting to cache the forecast...")
                 forecast.pop('_id', None)
                 self.mongo.insert(data=forecast, collection_name="Forecasts")
-                print("Forecast cached successfully!")
+                print("Forecast stored in mongo!")
             except Exception as e:
-                print(f"Error during API call or caching: {e}")
+                print(f"Error during API call or inserting to mongo: {e}")
                 return False
 
         return True
 
 def fetch_and_cache_forecast():
-    mongo_handler = MongoHandler()  # Assuming MongoHandler is appropriately initialized
+    mongo_handler = MongoHandler()
     weather_forecast = WeatherForecast(mongo_handler)
     weather_forecast.get_forecast()

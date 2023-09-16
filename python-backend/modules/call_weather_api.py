@@ -23,30 +23,28 @@ def call_weather_api(latitude, longitude, mongo_handler, **kwargs):
     """
     BASE_URL = "https://api.open-meteo.com/v1/forecast"
 
-    # Default parameters
-    default_params = {
+    # TODO: once map is implemented, add dynamic timezone
+    wind_params = {
         "hourly": "windspeed_10m,winddirection_10m,windgusts_10m",
         "daily": "windspeed_10m_max,windgusts_10m_max",
         "timezone": "America/Chicago",
         "models": "best_match"
     }
 
-    # Mandatory parameters
     params = {
         "latitude": latitude,
         "longitude": longitude,
-        **default_params,
-        **kwargs  # This unpacks the kwargs directly into the params dict
+        **wind_params,
+        **kwargs
     }
     
     try:
         response = requests.get(BASE_URL, params=params)
-        response.raise_for_status()  # Raises stored HTTPError, if one occurred.
+        response.raise_for_status() 
 
-        # Parse JSON only once
+        
         forecast_data = response.json()
 
-        # Cache the API response in MongoDB
         mongo_handler.insert(data=forecast_data, collection_name="Forecasts")
 
         return forecast_data

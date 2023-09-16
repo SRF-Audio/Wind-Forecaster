@@ -6,8 +6,6 @@ class HourlyRetriever:
 
     def get_hourly_forecast(self):
         try:
-            # Here, I'm providing a general-purpose aggregation pipeline. 
-            # Update this according to your database's schema and requirements.
             pipeline = [
     {
         '$match': {
@@ -46,7 +44,7 @@ class HourlyRetriever:
 ]
 
 
-            # Fetch the aggregated results
+
             results = list(self.mongo.collections["Forecasts"].aggregate(pipeline))
 
             print(results)
