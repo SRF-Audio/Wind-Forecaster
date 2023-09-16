@@ -1,6 +1,5 @@
 import os
 from app import app
-from modules.forecast_handler import fetch_and_cache_forecast
 
 if __name__ == "__main__":
 

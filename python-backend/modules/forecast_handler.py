@@ -1,25 +1,17 @@
-import os
 from datetime import datetime, timedelta
+import pytz
 from modules.call_weather_api import call_weather_api
 from modules.mongo_handler import MongoHandler
 from pymongo import errors as pymongo_errors
-from bson import ObjectId
+from modules.json_pretty_print import json_pretty_print
 
 class WeatherForecast:
     def __init__(self, mongo_handler: MongoHandler):
-        self.latitude = None
-        self.longitude = None
+        self.latitude = 38.810608  # Default
+        self.longitude = -90.699844  # Default
         self.additional_params = {}
         self.mongo = mongo_handler
         self.mongo.connect("weather_database", ["Forecasts"])
-        
-        
-        # TODO: Replace with dynamic map coordinates once map is implemented
-        # https://github.com/SRF-Audio/Wind-Forecaster/issues/2
-        tempLat = 38.810608
-        tempLong = -90.699844
-        self.set_latitude(tempLat)
-        self.set_longitude(tempLong)
 
     def set_latitude(self, latitude: float):
         self.latitude = latitude
@@ -30,44 +22,49 @@ class WeatherForecast:
     def set_additional_params(self, params: dict):
         self.additional_params = params
 
-    def is_cached_forecast_present(self) -> bool:
-        one_hour_ago = datetime.utcnow() - timedelta(hours=1)
-        
-        oid_one_hour_ago = ObjectId.from_datetime(one_hour_ago)
-        
+    def recent_forecast_in_db(self) -> bool:
         try:
-            is_present = self.mongo.is_forecast_present(collection_name="Forecasts", query={"_id": {"$gt": oid_one_hour_ago}})
-            print(f"Is forecast present in cache? {is_present}")
-            return is_present
+            latest_forecast = self.mongo.db["Forecasts"].find_one(sort=[("_id", -1)])
+            if not latest_forecast:
+                print("No forecast found in database.")
+                return False
+            forecast_time = latest_forecast['_id'].generation_time.replace(tzinfo=None)
+            one_hour_ago = datetime.utcnow().replace(tzinfo=None) - timedelta(hours=1)
+            print(f"Latest forecast time: {forecast_time}")
+            print(f"One hour ago: {one_hour_ago}")
+            return forecast_time > one_hour_ago
         except pymongo_errors.PyMongoError as e:
-            print(f"Error checking for cached forecast: {e}")
+            print(f"Error checking recent forecast in DB: {e}")
             return False
-            
-    def get_forecast(self) -> bool:
-        forecast = None
-        
-        if self.is_cached_forecast_present():
-            one_hour_ago = datetime.utcnow() - timedelta(hours=1)
-            forecast = self.mongo.fetch_all(collection_name="Forecasts", query={"time": {"$gte": one_hour_ago}})
-            print(f"Forecast fetched from mongo: {forecast}")
 
-        if not forecast:
-            if not self.latitude or not self.longitude:
-                print("Latitude and Longitude not set!")
-                return False
-            try:
-                forecast = call_weather_api(latitude=self.latitude, longitude=self.longitude, mongo_handler=self.mongo, **self.additional_params)
-                print(f"Forecast fetched from API: {forecast}")
-                forecast.pop('_id', None)
-                self.mongo.insert(data=forecast, collection_name="Forecasts")
-                print("Forecast stored in mongo!")
-            except Exception as e:
-                print(f"Error during API call or inserting to mongo: {e}")
-                return False
+    def log_forecast(self, forecast):
+        print(f"Forecast:\n{json_pretty_print(forecast)}")
 
-        return True
+    def fetch_from_api(self) -> dict:
+        if not self.latitude or not self.longitude:
+            print("Latitude and Longitude not set!")
+            return None
+        return call_weather_api(latitude=self.latitude, longitude=self.longitude, mongo_handler=self.mongo, **self.additional_params)
 
-def fetch_and_cache_forecast():
+    def write_to_db(self, forecast):
+        try:
+            forecast.pop('_id', None)
+            self.mongo.insert(data=forecast, collection_name="Forecasts")
+            print("New forecast data inserted into MongoDB.")
+        except Exception as e:
+            print(f"Error writing to DB: {e}")
+
+    def check_and_update_forecast(self):
+        if self.recent_forecast_in_db():
+            forecast = self.mongo.fetch_all(collection_name="Forecasts", query={"time": {"$gt": datetime.utcnow() - timedelta(hours=1)}})
+            self.log_forecast(forecast)
+        else:
+            forecast = self.fetch_from_api()
+            if forecast:
+                self.log_forecast(forecast)
+                self.write_to_db(forecast)
+
+def fetch_and_write_forecast():
     mongo_handler = MongoHandler()
     weather_forecast = WeatherForecast(mongo_handler)
-    weather_forecast.get_forecast()
+    weather_forecast.check_and_update_forecast()

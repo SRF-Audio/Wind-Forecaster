@@ -1,7 +1,7 @@
 from flask import Flask, json, jsonify
 from flask_cors import CORS
 from . import app
-from modules.forecast_handler import WeatherForecast, fetch_and_cache_forecast
+from modules.forecast_handler import WeatherForecast, fetch_and_write_forecast
 from modules.mongo_handler import MongoHandler
 from modules.json_encoder import JSONEncoder
 from modules.hourly_retriever import HourlyRetriever
@@ -10,7 +10,7 @@ from modules.hourly_retriever import HourlyRetriever
 mongo_handler = MongoHandler()
 mongo_handler.test_connection()
 mongo_handler.connect("weather_database", ["Forecasts"])
-fetch_and_cache_forecast()
+fetch_and_write_forecast()
 print("Server started!")
 
 CORS(app)
