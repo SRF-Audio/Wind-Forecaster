@@ -32,9 +32,9 @@ function App() {
 
   return (
     <div className="App">
-      <header className="App-header">
-        <ResponsiveAppBar />
+      <ResponsiveAppBar />
 
+      <header className="App-header">
         {data.length > 0 ? (
           data.map((forecast, index) => <WindCard key={index} data={forecast} />)
         ) : (
