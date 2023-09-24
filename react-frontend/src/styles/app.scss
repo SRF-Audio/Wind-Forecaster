@@ -1,4 +1,5 @@
 @import './components/wind_card';
+@import './components/arrow';
 
 .App {
     font-family: 'Arial', sans-serif;
@@ -28,13 +29,23 @@
             grid-template-columns: repeat(3, 1fr);
         }
 
-        .wind-card {
-            /* margin-bottom is not necessary as grid-gap handles spacing */
-        }
 
         p {
             color: #666;
             margin-top: 20px;
         }
+
     }
+
+    .ArrowContainer {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: calc(100vh - 64px - 20px); // added 20px padding
+        padding: 2rem; // new padding
+        gap: 10rem;
+    }
+
 }
