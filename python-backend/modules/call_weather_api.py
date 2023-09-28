@@ -28,8 +28,10 @@ def call_weather_api(latitude, longitude, mongo_handler, **kwargs):
     wind_params = {
         "hourly": "windspeed_10m,winddirection_10m,windgusts_10m",
         "daily": "windspeed_10m_max,windgusts_10m_max",
+        "windspeed_units": "kn",
         "timezone": "America/Chicago",
         "models": "best_match"
+        
     }
 
     params = {

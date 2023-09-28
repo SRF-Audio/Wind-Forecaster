@@ -7,40 +7,46 @@ class HourlyRetriever:
     def get_hourly_forecast(self):
         try:
             pipeline = [
-    {
-        '$match': {
-            'hourly': {
-                '$exists': True
-            }
-        }
-    },
-    {
-        '$project': {
-            'hours': {
-                '$zip': {
-                    'inputs': [
-                        '$hourly.time',
-                        '$hourly.windspeed_10m',
-                        '$hourly.winddirection_10m',
-                        '$hourly.windgusts_10m'
-                    ],
-                    'useLongestLength': True
+            {
+                '$sort': {'_id': -1}
+            },
+            {
+                '$limit': 1
+            },
+            {
+                '$match': {
+                    'hourly': {
+                        '$exists': True
+                    }
                 }
-            }
-        }
-    },
-    {
-        '$unwind': '$hours'
-    },
-    {
-        '$project': {
-            '_id': 0,
-            'time': { '$arrayElemAt': ['$hours', 0] },
-            'windspeed': { '$arrayElemAt': ['$hours', 1] },
-            'winddirection': { '$arrayElemAt': ['$hours', 2] },
-            'windgusts': { '$arrayElemAt': ['$hours', 3] }
-        }
-    }
+            },
+            {
+                '$project': {
+                    'hours': {
+                        '$zip': {
+                            'inputs': [
+                                '$hourly.time',
+                                '$hourly.windspeed_10m',
+                                '$hourly.winddirection_10m',
+                                '$hourly.windgusts_10m'
+                            ],
+                            'useLongestLength': True
+                        }
+                    }
+                }
+            },
+            {
+                '$unwind': '$hours'
+            },
+            {
+                '$project': {
+                    '_id': 0,
+                    'time': { '$arrayElemAt': ['$hours', 0] },
+                    'windspeed': { '$arrayElemAt': ['$hours', 1] },
+                    'winddirection': { '$arrayElemAt': ['$hours', 2] },
+                    'windgusts': { '$arrayElemAt': ['$hours', 3] }
+                }
+            },
 ]
 
 

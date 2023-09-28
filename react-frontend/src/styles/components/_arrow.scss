@@ -2,7 +2,9 @@
     width: 200px;
     height: 40px;
     position: relative;
+    transform: rotate(-90deg); // point north
     background: red;
+    transition: transform 0.6s ease-in-out;
 }
 
 #pointer:after {

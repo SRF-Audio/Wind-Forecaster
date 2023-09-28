@@ -23,10 +23,10 @@ function WindCard({ data }) {
                     Wind Direction: {data.winddirection}°
                 </Typography>
                 <Typography variant="h5" component="div">
-                    Wind Gusts: {data.windgusts} m/s
+                    Wind Gusts: {data.windgusts} knots
                 </Typography>
                 <Typography variant="h5" component="div">
-                    Wind Speed: {data.windspeed} m/s
+                    Wind Speed: {data.windspeed} knots
                 </Typography>
             </CardContent>
         </Card>

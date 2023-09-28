@@ -33,8 +33,6 @@ def get_hourly_forecast():
 
 @app.route('/daily', methods=['GET'])
 def get_daily_forecast():
-    # NOTE: You'll need to implement the functionality for this 
-    # in the WeatherForecast class (or another module).
     daily_forecast = WeatherForecast(mongo_handler).get_daily_forecast()
     
     if daily_forecast["success"]:
